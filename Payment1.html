@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway Pembayaran Futuristik</title>
+    <style>
+        /* --- Import Font --- */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+        /* --- CSS Variables & Theming --- */
+        :root {
+            --bg-color-light: #f0f2f5;
+            --surface-color-light: #ffffff;
+            --text-primary-light: #1c1c1e;
+            --text-secondary-light: #6c757d;
+            --accent-primary-light: #007bff;
+            --accent-secondary-light: #17a2b8;
+            --glow-color-light: rgba(0, 123, 255, 0.3);
+        }
+
+        .dark-mode {
+            --bg-color-dark: #0a0c10;
+            --surface-color-dark: #161b22;
+            --text-primary-dark: #c9d1d9;
+            --text-secondary-dark: #8b949e;
+            --accent-primary-dark: #58a6ff;
+            --accent-secondary-dark: #39c5bb;
+            --glow-color-dark: rgba(88, 166, 255, 0.5);
+        }
+
+        /* --- Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-color-light);
+            color: var(--text-primary-light);
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+        
+        body.dark-mode {
+            background: var(--bg-color-dark);
+            color: var(--text-primary-dark);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+
+        /* --- Animations & Keyframes --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes backgroundPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px var(--accent-primary-dark), 0 0 40px var(--accent-primary-dark); }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px var(--accent-secondary-dark), 0 0 50px var(--accent-secondary-dark); }
+        }
+
+        /* --- Utility Classes --- */
+        .hidden {
+            display: none !important;
+        }
+        
+        .visible {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        .interactive-glow {
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-glow:hover {
+             box-shadow: 0 0 25px var(--glow-color-dark);
+             transform: translateY(-5px) scale(1.02);
+        }
+        .dark-mode .interactive-glow:hover {
+             box-shadow: 0 0 35px var(--glow-color-dark);
+        }
+
+
+        /* --- Welcome Screen --- */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #fff;
+            z-index: 10000;
+            background: linear-gradient(270deg, #0f0c29, #302b63, #24243e, #0a192f);
+            background-size: 400% 400%;
+            animation: backgroundPulse 15s ease infinite;
+        }
+
+        #welcome-text {
+            animation: glow 2s ease-in-out infinite alternate;
+            font-size: 3rem;
+        }
+        
+        #welcome-subtext {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
+        }
+
+        /* --- Main Content Layout --- */
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 2rem 1rem;
+        }
+        
+        .page {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: slideInUp 0.7s ease-out;
+        }
+
+        /* --- Header --- */
+        .site-header {
+            padding: 1rem 2rem;
+            background: var(--surface-color-light);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.5s ease;
+        }
+        .dark-mode .site-header {
+            background: var(--surface-color-dark);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-primary-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        .dark-mode .logo {
+            color: var(--accent-primary-dark);
+        }
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        /* --- Theme Toggle Switch --- */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 50px;
+        }
+        .theme-switch input { display: none; }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 3px;
+            content: "";
+            height: 18px;
+            left: 3px;
+            position: absolute;
+            transition: .4s;
+            width: 18px;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--accent-primary-dark);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* --- Home Page --- */
+        #home-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+            text-align: center;
+        }
+
+        .pay-button {
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            background: linear-gradient(45deg, var(--accent-primary-light), var(--accent-secondary-light));
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .dark-mode .pay-button {
+             background: linear-gradient(45deg, var(--accent-primary-dark), var(--accent-secondary-dark));
+             box-shadow: 0 0 20px var(--glow-color-dark);
+        }
+        .pay-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+        }
+        .dark-mode .pay-button:hover {
+            box-shadow: 0 0 35px var(--glow-color-dark);
+        }
+
+        /* --- Payment Page --- */
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .payment-card {
+            background: var(--surface-color-light);
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid transparent;
+        }
+        .dark-mode .payment-card {
+            background: var(--surface-color-dark);
+            border: 1px solid #30363d;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
+        .payment-card .icon {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .payment-card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary-light);
+        }
+        .dark-mode .payment-card h3 { color: var(--text-primary-dark); }
+        
+        .payment-card p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary-light);
+            min-height: 40px;
+        }
+        .dark-mode .payment-card p { color: var(--text-secondary-dark); }
+
+        .va-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+        .dark-mode .va-number {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--accent-primary-light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .dark-mode .action-button {
+            background-color: var(--accent-primary-dark);
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+        .action-button:active {
+            transform: translateY(0);
+        }
+        
+        .action-button.success {
+            background-color: #28a745 !important;
+        }
+
+        #qris-code-canvas {
+            max-width: 500px;
+            height: auto;
+            border: 9px solid white;
+            border-radius: 10px;
+            margin: 0 auto 1.5rem auto;
+            display: block;
+        }
+        .dark-mode #qris-code-canvas {
+            border-color: var(--surface-color-light);
+        }
+
+        /* --- Footer --- */
+        .site-footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            background: var(--surface-color-light);
+            color: var(--text-secondary-light);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        .dark-mode .site-footer {
+            background: #010409;
+            color: var(--text-secondary-dark);
+            border-top: 1px solid #30363d;
+        }
+        
+        /* --- Responsiveness --- */
+        @media (max-width: 768px) {
+            #welcome-text {
+                font-size: 2rem;
+            }
+            #welcome-subtext {
+                font-size: 1rem;
+            }
+            .site-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            main {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <audio id="click-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjQwLjEwMQAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/84QrgI8AAABpAAAARoAAAAgAEgQFPmH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/84QpgLkAIN0AAAAAAgDgBf//AAAqgAABVgAAAACgGAABQQBAAABpQCAAeAAAApQAAAAAAACkAAAAA//OEKYCgBACjcAAAAAAIB4AWD//wAACqAAAFWAAAADgGAAFDAEAACGlAIAF4AAAKUAAAAAAAADpAAAAP/zhCmAYAQBo3QAAAAACAeAFg///AAAKoAAAVYAAAAOAQAAUMAQAAIaUAgAXgAAApQAAAAAAAAOkAAAA//OEKYC4BACjcAAAAAAIB4AWD//wAACqAAAFWAAAAOAQAAUMAQAAIaUAgAXgAAApQAAAAAAAAOkAAAA"></audio>
+    <audio id="success-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjQwLjEwMQAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/84QrgL8AAABpAAAARoAAAAgAEgQFPmH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/84QpgJ8ALm8AAAAAAA14AOD/wAEUIAAAoQAAASgAAAADgGAAI5AEAAAGlAIAEIAAAKUAAAAAAAADpQAAAP/zhCmAnwAubwAAAAAADXgA4P/AARQgAAChAAABKAAAAAOAQAAjkAQAAAYUAgAQgAAApQAAAAAAAAOlAAAA//OEKYCwAC5vAAAAAAANeADg/8ABFCAAAKEAAAEoAAAAA4BAACOQBAAABhQCAECAAAKUAAAAAAAADpQAAAP/zhCmAsAAubwAAAAAADXgA4P/AARQgAAChAAABKAAAAAOAQAAjkAQAAAYUAgAQgAAApQAAAAAAAAOlAAAA"></audio>
+
+    <div id="welcome-screen">
+        <div>
+            <h1 id="welcome-text">Lumakara Store</h1>
+            <p id="welcome-subtext">Menyediakan All Produk dan Jasa Digital</p>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+        
+        <header class="site-header">
+            <a href="#" class="logo" onclick="showPage('home-page'); return false;">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="https://files.catbox.moe/csb3re.png"><g clip-path="url(#clip0_429_1108)"><path d="M7 2L10 9L14 2L17 9L20 2H22L17 22H14L10 2H7" fill="currentColor"></path><path d="M5 2L2 22H5L9 2H5Z" fill="currentColor"></path></g><defs><clipPath id="clip0_429_1108"><rect width="24" height="24" fill="white"></rect></clipPath></defs></svg>
+                Lumakara Store
+            </a>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="theme-toggle">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <section id="home-page" class="page visible">
+                <h1>SELESAIKAN PEMBAYARAN!</h1>
+                <p style="margin: 1rem 0 2rem 0; font-size: 1.1rem; color: var(--text-secondary-light);" class="dark-mode:color-text-secondary-dark">Selesaikan Pembayaran Anda Agar Dapat Di Proses Oleh Dev Kami</p>
+                <button id="pay-button" class="pay-button">Next To Payment</button>
+            </section>
+
+            <section id="payment-page" class="page hidden">
+                <h2>Pilih Metode Pembayaran</h2>
+<div class="payment-grid">
+    
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://files.catbox.moe/qydpni.png">
+        <h3>QRIS</h3>
+        <p>Scan kode QR ini menggunakan aplikasi e-wallet atau m-banking Anda.</p>
+        <canvas id="qris-code-canvas" width="700" height="700"></canvas>
+        <button id="download-qris-btn" class="action-button">Download Gambar</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/512px-Logo_dana_blue.svg.png" alt="DANA Icon">
+        <h3>DANA</h3>
+        <p>Bayar ke nomor DANA a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="dana-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#dana-va">Salin Nomor</button>
+    </div>
+    
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/512px-Gopay_logo.svg.png" alt="GoPay Icon">
+        <h3>GoPay</h3>
+        <p>Bayar ke nomor GoPay a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="gopay-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#gopay-va">Salin Nomor</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_ovo_purple.svg/512px-Logo_ovo_purple.svg.png" alt="OVO Icon">
+        <h3>OVO</h3>
+        <p>Bayar ke nomor OVO a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="ovo-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#ovo-va">Salin Nomor</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/512px-Bank_Mandiri_logo_2016.svg.png" alt="Mandiri Icon">
+        <h3>Mandiri Virtual Account</h3>
+        <p>Bayar ke nomor VA Mandiri a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="mandiri-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#mandiri-va">Salin Nomor</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/id/thumb/5/55/BNI_logo.svg/512px-BNI_logo.svg.png" alt="BNI Icon">
+        <h3>BNI Virtual Account</h3>
+        <p>Bayar ke nomor VA BNI a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="bni-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#bni-va">Salin Nomor</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/512px-BANK_BRI_logo.svg.png" alt="BRI Icon">
+        <h3>BRI Virtual Account</h3>
+        <p>Bayar ke nomor VA BRI a/n <strong>Fa****l R***** N********</strong>.</p>
+        <div id="bri-va" class="va-number">085183518016</div>
+        <button class="action-button copy-btn" data-clipboard-target="#bri-va">Salin Nomor</button>
+    </div>
+
+    <div class="payment-card interactive-glow">
+        <img class="icon" src="https://www.freepnglogos.com/uploads/visa-and-mastercard-logo-26.png" alt="Credit Card Icon" style="object-fit: contain;">
+        <h3>Kartu Kredit / Debit</h3>
+        <p>Pembayaran aman (Visa, MasterCard, JCB).</p>
+        <button id="creditcard-btn" class="action-button" style="margin-top: 38px;">Lanjutkan Pembayaran</button>
+    </div>
+
+</div>
+
+            </section>
+        </main>
+        
+        <footer class="site-footer">
+            <p>&copy; 2025 JupiterStore. Semua hak cipta dilindungi. <br> Kontak kami di support@jupiter.ai</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Elemen DOM ---
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const mainContent = document.getElementById('main-content');
+            const pages = document.querySelectorAll('.page');
+            const payButton = document.getElementById('pay-button');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            const downloadQRISBtn = document.getElementById('download-qris-btn');
+            const themeToggle = document.getElementById('theme-toggle');
+            const clickSound = document.getElementById('click-sound');
+            const successSound = document.getElementById('success-sound');
+            
+            // --- Pengaturan Awal ---
+            // Simulasikan loading dan transisi ke halaman utama
+            setTimeout(() => {
+                welcomeScreen.style.animation = 'fadeOut 1s ease forwards';
+                setTimeout(() => {
+                    welcomeScreen.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    mainContent.style.animation = 'fadeIn 1s ease';
+                }, 1000);
+            }, 3000); // Durasi halaman sambutan
+
+            // --- Logika Navigasi Halaman ---
+            window.showPage = function(pageId) {
+                playSound(clickSound);
+                pages.forEach(page => {
+                    if (page.id === pageId) {
+                        page.classList.remove('hidden');
+                        page.classList.add('visible');
+                    } else {
+                        page.classList.add('hidden');
+                        page.classList.remove('visible');
+                    }
+                });
+            }
+            payButton.addEventListener('click', () => showPage('payment-page'));
+
+            // --- Logika Pembayaran ---
+            // Generate QRIS
+            (function() {
+                const canvas = document.getElementById('qris-code-canvas');
+                if (canvas) {
+                    new QRious({
+                        element: canvas,
+                        value: '0002010102120026570009ID.OR.ID1234567801189360091234567890123020707070730303UFO52045812530336054061500005802ID5913JupiterStore6009Jakarta6105123456304EAEF',
+                        size: 200,
+                        padding: 10,
+                        level: 'H',
+                        background: 'white',
+                        foreground: 'black',
+                    });
+                }
+            })();
+
+            // Tombol Download QRIS
+            downloadQRISBtn.addEventListener('click', () => {
+                playSound(clickSound);
+                const canvas = document.getElementById('qris-code-canvas');
+                const link = document.createElement('a');
+                link.download = 'qris-payment-jupiterstore.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+
+            // Tombol Salin Nomor VA
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetSelector = button.getAttribute('data-clipboard-target');
+                    const targetElement = document.querySelector(targetSelector);
+                    const vaNumber = targetElement.innerText;
+                    
+                    navigator.clipboard.writeText(vaNumber).then(() => {
+                        playSound(successSound);
+                        const originalText = button.innerText;
+                        button.innerText = 'Tersalin!';
+                        button.classList.add('success');
+                        
+                        setTimeout(() => {
+                            button.innerText = originalText;
+                            button.classList.remove('success');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Gagal menyalin:', err);
+                        alert('Gagal menyalin nomor. Coba lagi.');
+                    });
+                });
+            });
+
+            // --- Logika Mode Gelap/Terang ---
+            function setDarkMode(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    themeToggle.checked = true;
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    themeToggle.checked = false;
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            themeToggle.addEventListener('change', () => {
+                playSound(clickSound);
+                setDarkMode(themeToggle.checked);
+            });
+            
+            // Periksa preferensi tema dari localStorage saat memuat
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                setDarkMode(true);
+            } else if (savedTheme === 'light') {
+                setDarkMode(false);
+            } else {
+                // Default ke mode gelap jika tidak ada preferensi
+                setDarkMode(true);
+            }
+
+            // --- Fungsi Utilitas ---
+            function playSound(soundElement) {
+                soundElement.currentTime = 0;
+                soundElement.play().catch(error => console.log("Interaksi pengguna diperlukan untuk memutar suara."));
+            }
+        });
+    </script>
+</body>
+</html>
